@@ -19,16 +19,11 @@ def get_page_content(url):
     except Exception as e:
         return None
 
-# soup = BeautifulSoup(page_content, 'html.parser')
-# page_text = soup.get_text()
-
 def clean_title(title):
     invalid_characters = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
     for c in invalid_characters:
         title.replace(c,'')
     return title
-
-# if re.search(term, page_text, re.I) :
 
 def get_urls(soup):
     links = soup.find_all('a')
@@ -55,17 +50,10 @@ def reformat_url(url):
     else:
         return url
 
-def save(text, path):
+def save(saved_urls, path):
     f = open(path, 'w', encoding = 'utf-8', errors = 'ignore')
-    f.write(text)
+    f.write('\n'.join(saved_urls))
     f.close()
-
-# f = open("crawled_urls.txt", "w")
-# i = 1
-# for url in crawled_urls:
-#     f.write(str(i) + ': ' + url + '\n')
-#     i += 1
-# f.close()
 
 def focused_crawler(seed_urls: list, related_terms: list):
     queue = seed_urls
@@ -85,16 +73,21 @@ def focused_crawler(seed_urls: list, related_terms: list):
                 term_count += 1
                 if term_count >= 2:
                     page_title = clean_title(soup.title.string)
-                    save(page_title + ", " + page_content, "results")
-                    saved_urls.append(url)
-                    visited_urls.add(url)
+                    saved_urls.append(page_title + ", " + url)
+                    # visited_urls.add(url)
                     page_count += 1
+                    print(page_title)
                     break
         if page_count >= 500:
             break
         outgoing_urls = get_urls(soup)
         for outgoing_url in outgoing_urls:
-            if 
+            if is_url_valid(outgoing_url) and outgoing_url not in visited_urls:
+                queue.insert(0, reformat_url(outgoing_url))
+                visited_urls.add(outgoing_url)
+    save(saved_urls, "results")
 
 
-focused_crawler(["https://en.wikipedia.org/wiki/World_War_II"], [])
+focused_crawler(["https://en.wikipedia.org/wiki/World_War_II", "https://en.wikipedia.org/wiki/Nazi_Germany"],
+                ["World War II", "World War", "Axis", "Allies", "Normandy", "Nazi", "League of Nations",
+                 "atomic bomb", "Germany", "Holocaust"])
