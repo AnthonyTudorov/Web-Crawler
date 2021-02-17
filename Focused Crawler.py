@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 from urllib.request import urlopen
 import re
 import ssl
-import os
 
 try:
     _create_unverified_https_context = ssl._create_unverified_context
@@ -10,6 +9,7 @@ except AttributeError:
     pass
 else:
     ssl._create_default_https_context = _create_unverified_https_context
+
 
 def get_page_content(url):
     try:
@@ -19,11 +19,13 @@ def get_page_content(url):
     except Exception as e:
         return None
 
+
 def clean_title(title):
     invalid_characters = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
     for c in invalid_characters:
         title.replace(c,'')
     return title
+
 
 def get_urls(soup):
     links = soup.find_all('a')
@@ -32,16 +34,20 @@ def get_urls(soup):
         urls.append(link.get('href'))
     return urls
 
+
 def is_url_valid(url):
     if url is None:
         return False
     if re.search('#', url):
+        return False
+    if re.search('File:', url):
         return False
     match=re.search('^/wiki/', url)
     if match:
         return True
     else:
         return False
+
 
 def reformat_url(url):
     match=re.search('^/wiki/', url)
@@ -50,10 +56,12 @@ def reformat_url(url):
     else:
         return url
 
+
 def save(saved_urls, path):
     f = open(path, 'w', encoding = 'utf-8', errors = 'ignore')
     f.write('\n'.join(saved_urls))
     f.close()
+
 
 def focused_crawler(seed_urls: list, related_terms: list):
     queue = seed_urls
@@ -74,7 +82,6 @@ def focused_crawler(seed_urls: list, related_terms: list):
                 if term_count >= 2:
                     page_title = clean_title(soup.title.string)
                     saved_urls.append(page_title + ", " + url)
-                    # visited_urls.add(url)
                     page_count += 1
                     print(page_title)
                     break
