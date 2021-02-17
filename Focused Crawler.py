@@ -40,7 +40,7 @@ def is_url_valid(url):
         return False
     if re.search('#', url):
         return False
-    if re.search('File:', url):
+    if re.search(':', url):
         return False
     match=re.search('^/wiki/', url)
     if match:
