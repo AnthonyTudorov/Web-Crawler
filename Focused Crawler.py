@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
+from pathlib import Path
 import re
 import ssl
 
@@ -57,9 +58,9 @@ def reformat_url(url):
         return url
 
 
-def save(saved_urls, path):
+def save(text, path):
     f = open(path, 'w', encoding = 'utf-8', errors = 'ignore')
-    f.write('\n'.join(saved_urls))
+    f.write(text)
     f.close()
 
 
@@ -68,6 +69,8 @@ def focused_crawler(seed_urls: list, related_terms: list):
     visited_urls = set(seed_urls)
     page_count = 0
     saved_urls = []
+    saved_page_titles = set()
+    Path("pages").mkdir(exist_ok=True)
     while queue:
         url = queue.pop()
         page_content = get_page_content(url)
@@ -81,9 +84,15 @@ def focused_crawler(seed_urls: list, related_terms: list):
                 term_count += 1
                 if term_count >= 2:
                     page_title = clean_title(soup.title.string)
+                    if page_title in saved_page_titles:
+                        break
+                    saved_page_titles.add(page_title)
+                    while len(page_title.encode("utf-8")) > 255:
+                        page_title[-1] = ""
+                    save(page_content, "pages/" + page_title + ".html")
                     saved_urls.append(page_title + ", " + url)
                     page_count += 1
-                    print(page_title)
+                    print(page_count, " ", page_title)
                     break
         if page_count >= 500:
             break
@@ -92,7 +101,7 @@ def focused_crawler(seed_urls: list, related_terms: list):
             if is_url_valid(outgoing_url) and outgoing_url not in visited_urls:
                 queue.insert(0, reformat_url(outgoing_url))
                 visited_urls.add(outgoing_url)
-    save(saved_urls, "results")
+    save("\n".join(saved_urls), "saved url list")
 
 
 focused_crawler(["https://en.wikipedia.org/wiki/World_War_II", "https://en.wikipedia.org/wiki/Nazi_Germany"],
