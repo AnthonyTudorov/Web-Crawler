@@ -1,3 +1,6 @@
 .idea
 venv
 pages
+frequency index.txt
+position index.txt
+terms.txt
