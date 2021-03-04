@@ -12,7 +12,7 @@ def clean_title(title):
 
 
 def save_index(index):
-    with open('position index.txt', 'w', encoding='utf-8') as f, open('terms.txt', 'w', encoding='utf-8') as t_file:
+    with open('frequency index.txt', 'w', encoding='utf-8') as f, open('terms.txt', 'w', encoding='utf-8') as t_file:
         term_count = 0
         for term in index:
             try:
